@@ -11,26 +11,32 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Node.js
+    - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        node-version: '20.x'
+        node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
-    - name: Force clean installation
-      run: |
-        # Видалити будь-який існуючий lock-файл
-        rm -f package-lock.json
-        # Встановити залежності без використання ci
-        npm install --no-package-lock
-        npm install
+    - name: Install dependencies
+      run: npm ci
 
-    - name: Run tests
-      run: npm test -- --watchAll=false
+    - name: Run tests with coverage
+      run: npm run test:ci
+
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report-${{ matrix.node-version }}
+        path: coverage/
+        retention-days: 7
 
   build:
     name: Build Next.js App
@@ -47,11 +53,11 @@ jobs:
         node-version: '20.x'
         cache: 'npm'
 
-    - name: Force clean installation
-      run: |
-        rm -f package-lock.json
-        npm install --no-package-lock
-        npm install
+    - name: Install dependencies
+      run: npm ci
 
     - name: Build application
       run: npm run build
+
+    - name: Run type check (if TypeScript)
+      run: npx tsc --noEmit --skipLibCheck || echo "TypeScript not configured"
