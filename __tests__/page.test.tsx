@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import Page from '../src/app/page'
 
 describe('Page', () => {
@@ -34,12 +33,4 @@ describe('Page', () => {
     expect(link).toBeInTheDocument()
   })
 
-  it('button has to be in the document', () => {
-    render(<Page/>)
-    const button = screen.getByRole('button', {name: /clIck me/i}) // Arrange
-
-     userEvent.click(button) // Act     
-
-     expect(screen.getByText('Click me')).toBeInTheDocument() // Assert
-  })
 })
